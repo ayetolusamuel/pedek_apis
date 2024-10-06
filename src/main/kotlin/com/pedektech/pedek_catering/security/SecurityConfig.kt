@@ -42,6 +42,7 @@ class SecurityConfig(
                         "api/aboutMinistry",
                         "api/campRules",
                         "api/products",
+                        "api/favourites/**",
                         "api/user/reset-password/request",
                         "api/user/reset-password/verify-otp",
                         "/api/user/reset-password/update",
