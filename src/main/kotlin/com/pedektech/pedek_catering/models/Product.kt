@@ -75,3 +75,11 @@ data class CateringProduct(
     @Column(nullable = true)
     val largeImage: String? = null
 )
+
+
+data class CampaignResponse(
+    val status: Boolean,
+    val message: String,
+    val bannerImage: String,
+    val products: List<CateringProduct>
+)

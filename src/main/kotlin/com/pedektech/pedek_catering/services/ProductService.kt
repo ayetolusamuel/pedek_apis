@@ -1,6 +1,7 @@
 package com.pedektech.pedek_catering.services
 
 import com.pedektech.pedek_catering.exceptions.DuplicateProductException
+import com.pedektech.pedek_catering.models.CampaignResponse
 import com.pedektech.pedek_catering.models.CateringProduct
 import com.pedektech.pedek_catering.models.Favourites
 import com.pedektech.pedek_catering.repositories.CateringProductRepository
@@ -99,4 +100,39 @@ class CateringProductService(
             false
         }
     }
+//
+//    fun getCampaignProducts(): CampaignResponse {
+//        return try {
+//            // Fetch products with discounts (part of the campaign).
+//            val campaignProducts = productRepository.findAllByDiscountIsNotNull()
+//
+//            // Validate the product list is not empty.
+//            if (campaignProducts.isEmpty()) {
+//                return CampaignResponse(
+//                    status = false,
+//                    message = "No campaign products found.",
+//                    bannerImage = "https://example.com/default-banner.jpg",
+//                    products = emptyList()
+//                )
+//            }
+//
+//            // Return successful response with products.
+//            CampaignResponse(
+//                status = true,
+//                message = "Campaign products fetched successfully.",
+//                bannerImage = "https://example.com/campaign-banner.jpg",
+//                products = campaignProducts
+//            )
+//        } catch (e: Exception) {
+//            // Handle potential exceptions (e.g., database issues).
+//            println("Error fetching campaign products: ${e.message}")
+//            CampaignResponse(
+//                status = false,
+//                message = "Failed to fetch campaign products. Please try again later.",
+//                bannerImage = "https://example.com/error-banner.jpg",
+//                products = emptyList()
+//            )
+//        }
+//    }
+
 }
