@@ -19,6 +19,8 @@ data class Campaign(
 
     @Column(nullable = false)
     val endDate: LocalDate,
+    @Column(nullable = false)
+    var active: Boolean = false,
 
     @ElementCollection
     @CollectionTable(
@@ -48,3 +50,5 @@ data class ProductDTO(
     val thumbnail: String?
 )
 
+
+data class UpdateStatusRequest(val active: Boolean)

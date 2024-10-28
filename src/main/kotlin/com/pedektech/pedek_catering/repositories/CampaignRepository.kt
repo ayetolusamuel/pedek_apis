@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface CampaignRepository : JpaRepository<Campaign, Long> {
     fun findByName(name: String): Campaign?
     fun existsByName(name: String): Boolean
+    fun findByActiveTrue(): List<Campaign>
 }
