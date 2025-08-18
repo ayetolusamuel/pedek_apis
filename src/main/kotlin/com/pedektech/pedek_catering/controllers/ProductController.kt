@@ -15,7 +15,7 @@ data class ApiResponse<T>(
 )
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 class CateringProductController(private val productService: CateringProductService) {
 
     @GetMapping
