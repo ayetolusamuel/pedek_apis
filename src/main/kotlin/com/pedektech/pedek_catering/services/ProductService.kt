@@ -8,15 +8,23 @@ import com.pedektech.pedek_catering.repositories.CateringProductRepository
 import com.pedektech.pedek_catering.repositories.FavouriteRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import java.util.*
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class CateringProductService(
     private val productRepository: CateringProductRepository,
-    private val favouriteRepository: FavouriteRepository) {
+    private val favouriteRepository: FavouriteRepository
+) {
 
+    // Original methods (kept for backward compatibility)
     fun getAllProducts(): List<CateringProduct> = productRepository.findAll()
+
+    // New paginated method
+    fun getAllProducts(pageable: Pageable): Page<CateringProduct> = productRepository.findAll(pageable)
 
     fun getProductById(id: Long): Optional<CateringProduct> = productRepository.findById(id)
 
@@ -24,7 +32,7 @@ class CateringProductService(
 
     fun createProduct(product: CateringProduct): CateringProduct {
         // Check for duplicate SKU
-        if (productRepository.existsBySku(product.sku?:"")) {
+        if (productRepository.existsBySku(product.sku ?: "")) {
             throw DuplicateProductException("A product with SKU '${product.sku}' already exists.")
         }
         return productRepository.save(product)
@@ -39,7 +47,7 @@ class CateringProductService(
         }
     }
 
-    // Fetch all favourite products based on SKU in Favourites
+    // Original method (kept for backward compatibility)
     fun getAllFavouriteProducts(): List<CateringProduct> {
         val favourites: List<Favourites> = favouriteRepository.findAll()
 
@@ -49,6 +57,27 @@ class CateringProductService(
         }
     }
 
+    // New paginated method for favourite products
+    fun getAllFavouriteProducts(pageable: Pageable): Page<CateringProduct> {
+        val favouritesPage: Page<Favourites> = favouriteRepository.findAll(pageable)
+
+        // Convert Page<Favourites> to Page<CateringProduct>
+        return favouritesPage.map { favourite ->
+            productRepository.findBySku(favourite.sku)
+        }.map { it!! } // Note: This assumes all favourite SKUs exist in products
+    }
+
+    // New method to get favourites by device MAC address with pagination
+    fun getFavouriteProductsByDevice(deviceMacAddress: String, pageable: Pageable): Page<CateringProduct> {
+        val favouritesPage: Page<Favourites> = favouriteRepository.findByDeviceMacAddress(
+            deviceMacAddress.lowercase(),
+            pageable
+        )
+
+        return favouritesPage.map { favourite ->
+            productRepository.findBySku(favourite.sku)
+        }.map { it!! } // Note: This assumes all favourite SKUs exist in products
+    }
 
     fun addAndRemoveFavourites(favourites: Favourites): ResponseEntity<Map<String, Any>> {
         // First, check if the product exists using the SKU
@@ -90,8 +119,6 @@ class CateringProductService(
         return ResponseEntity(response, HttpStatus.OK)
     }
 
-
-
     fun deleteProduct(id: Long): Boolean {
         return if (productRepository.existsById(id)) {
             productRepository.deleteById(id)
@@ -100,39 +127,9 @@ class CateringProductService(
             false
         }
     }
-//
-//    fun getCampaignProducts(): CampaignResponse {
-//        return try {
-//            // Fetch products with discounts (part of the campaign).
-//            val campaignProducts = productRepository.findAllByDiscountIsNotNull()
-//
-//            // Validate the product list is not empty.
-//            if (campaignProducts.isEmpty()) {
-//                return CampaignResponse(
-//                    status = false,
-//                    message = "No campaign products found.",
-//                    bannerImage = "https://example.com/default-banner.jpg",
-//                    products = emptyList()
-//                )
-//            }
-//
-//            // Return successful response with products.
-//            CampaignResponse(
-//                status = true,
-//                message = "Campaign products fetched successfully.",
-//                bannerImage = "https://example.com/campaign-banner.jpg",
-//                products = campaignProducts
-//            )
-//        } catch (e: Exception) {
-//            // Handle potential exceptions (e.g., database issues).
-//            println("Error fetching campaign products: ${e.message}")
-//            CampaignResponse(
-//                status = false,
-//                message = "Failed to fetch campaign products. Please try again later.",
-//                bannerImage = "https://example.com/error-banner.jpg",
-//                products = emptyList()
-//            )
-//        }
-//    }
 
+    // Campaign products with pagination
+    fun getCampaignProducts(pageable: Pageable): Page<CateringProduct> {
+        return productRepository.findAllByDiscountIsNotNull(pageable)
+    }
 }
