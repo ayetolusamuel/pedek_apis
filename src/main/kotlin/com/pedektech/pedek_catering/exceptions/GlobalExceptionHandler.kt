@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import java.sql.SQLIntegrityConstraintViolationException
+import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 class DuplicateProductException(message: String) : RuntimeException(message)
@@ -23,6 +24,18 @@ class DuplicateProductException(message: String) : RuntimeException(message)
 @ControllerAdvice
 class GlobalExceptionHandler {
 
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<Map<String, Any>> {
+        val errorResponse = mapOf(
+            "timestamp" to LocalDateTime.now(),
+            "status" to HttpStatus.BAD_REQUEST.value(),
+            "error" to "Bad Request",
+            "message" to ex.message.toString(),
+            "path" to "/api/favourites/toggle" // you can dynamically fetch the URL if needed
+        )
+        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
 
     @ExceptionHandler(JpaSystemException::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

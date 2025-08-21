@@ -21,15 +21,15 @@ class JwtUtil {
             .compact()
     }
 
-//    // Validate the JWT token against the user details
-//    fun validateToken(token: String, userDetails: User): Boolean {
-//        return try {
-//            val username = getUsernameFromToken(token)
-//            username == userDetails.userId && !isTokenExpired(token)
-//        } catch (e: Exception) {
-//            false
-//        }
-//    }
+    // Validate the JWT token against the user details
+    fun validateToken(token: String, userDetails: org.springframework.security.core.userdetails.User): Boolean {
+        return try {
+            val username = getUsernameFromToken(token)
+            username == userDetails.username && !isTokenExpired(token)
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     // Extract the username from the token
     fun getUsernameFromToken(token: String): String {

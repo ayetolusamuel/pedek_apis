@@ -1,7 +1,6 @@
 //package com.pedektech.pedek_catering.security
 //
 //import com.fasterxml.jackson.databind.ObjectMapper
-//import com.pedektech.ncym.model.User
 //import com.pedektech.pedek_catering.util.JwtUtil
 //import io.jsonwebtoken.ExpiredJwtException
 //import jakarta.servlet.FilterChain
@@ -9,6 +8,7 @@
 //import jakarta.servlet.http.HttpServletResponse
 //import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 //import org.springframework.security.core.context.SecurityContextHolder
+//import org.springframework.security.core.userdetails.User
 //import org.springframework.security.core.userdetails.UserDetailsService
 //import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 //import org.springframework.stereotype.Component

@@ -3,6 +3,10 @@ package com.pedektech.pedek_catering.controllers
 import com.pedektech.pedek_catering.exceptions.DuplicateProductException
 import com.pedektech.pedek_catering.models.CateringProduct
 import com.pedektech.pedek_catering.services.CateringProductService
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,15 +18,106 @@ data class ApiResponse<T>(
     val data: T? = null
 )
 
+data class PagedResponse<T>(
+    val content: List<T>,
+    val pageable: PageableInfo,
+    val totalElements: Long,
+    val totalPages: Int,
+    val last: Boolean,
+    val first: Boolean,
+    val numberOfElements: Int,
+    val size: Int,
+    val number: Int
+)
+
+data class PageableInfo(
+    val sort: SortInfo,
+    val pageNumber: Int,
+    val pageSize: Int,
+    val offset: Long,
+    val paged: Boolean,
+    val unpaged: Boolean
+)
+
+data class SortInfo(
+    val sorted: Boolean,
+    val unsorted: Boolean,
+    val empty: Boolean
+)
+
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 class CateringProductController(private val productService: CateringProductService) {
 
-    @GetMapping
-    fun getAllProducts(): ResponseEntity<ApiResponse<List<CateringProduct>>> {
-        val products = productService.getAllProducts()
-        return if (products.isEmpty()) {
+    // Simple paginated endpoint with page and size parameters (1-based pagination)
+    @GetMapping("/all")
+    fun getAllProducts(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "id") sort: String = "id",
+        @RequestParam(defaultValue = "asc") direction: String = "asc"
+    ): ResponseEntity<ApiResponse<List<CateringProduct>>> {
+        return try {
+            // Convert to 0-based pagination for Spring Data (page 1 becomes 0, page 2 becomes 1, etc.)
+            val zeroBasedPage = if (page <= 0) 0 else page - 1
+
+            val sortDirection = if (direction.lowercase() == "desc") Sort.Direction.DESC else Sort.Direction.ASC
+            val pageable = PageRequest.of(zeroBasedPage, size, Sort.by(sortDirection, sort))
+            val productsPage = productService.getAllProducts(pageable)
+
+            // Check if page is beyond available pages
+            if (zeroBasedPage >= productsPage.totalPages && productsPage.totalPages > 0) {
+                return ResponseEntity(
+                    ApiResponse(
+                        status = false,
+                        message = "Page $page not found. Total pages available: ${productsPage.totalPages} (1-${productsPage.totalPages})",
+                        data = null
+                    ),
+                    HttpStatus.NOT_FOUND
+                )
+            }
+
+            // Check if no data at all
+            if (productsPage.totalElements == 0L) {
+                return ResponseEntity(
+                    ApiResponse(
+                        status = false,
+                        message = "No products found in the database",
+                        data = null
+                    ),
+                    HttpStatus.NOT_FOUND
+                )
+            }
+
+            // Success response (show 1-based page numbers to user)
+            ResponseEntity.ok(
+                ApiResponse(
+                    status = true,
+                    message = "Products retrieved successfully (Page $page of ${productsPage.totalPages}, Total: ${productsPage.totalElements})",
+                    data = productsPage.content
+                )
+            )
+        } catch (e: Exception) {
             ResponseEntity(
+                ApiResponse(
+                    status = false,
+                    message = "Error retrieving products: ${e.message}",
+                    data = null
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
+    }
+
+    // New paginated endpoint
+    @GetMapping
+    fun getAllProductsPaginated(
+        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
+    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+        val productsPage = productService.getAllProducts(pageable)
+
+        if (productsPage.isEmpty) {
+            return ResponseEntity(
                 ApiResponse(
                     status = false,
                     message = "No products found",
@@ -30,15 +125,38 @@ class CateringProductController(private val productService: CateringProductServi
                 ),
                 HttpStatus.NOT_FOUND
             )
-        } else {
-            ResponseEntity.ok(
-                ApiResponse(
-                    status = true,
-                    message = "Products retrieved successfully",
-                    data = products
-                )
-            )
         }
+
+        val pagedResponse = PagedResponse(
+            content = productsPage.content,
+            pageable = PageableInfo(
+                sort = SortInfo(
+                    sorted = productsPage.pageable.sort.isSorted,
+                    unsorted = productsPage.pageable.sort.isUnsorted,
+                    empty = productsPage.pageable.sort.isEmpty
+                ),
+                pageNumber = productsPage.pageable.pageNumber,
+                pageSize = productsPage.pageable.pageSize,
+                offset = productsPage.pageable.offset,
+                paged = productsPage.pageable.isPaged,
+                unpaged = productsPage.pageable.isUnpaged
+            ),
+            totalElements = productsPage.totalElements,
+            totalPages = productsPage.totalPages,
+            last = productsPage.isLast,
+            first = productsPage.isFirst,
+            numberOfElements = productsPage.numberOfElements,
+            size = productsPage.size,
+            number = productsPage.number
+        )
+
+        return ResponseEntity.ok(
+            ApiResponse(
+                status = true,
+                message = "Products retrieved successfully",
+                data = pagedResponse
+            )
+        )
     }
 
     @GetMapping("/{id}")
@@ -87,10 +205,221 @@ class CateringProductController(private val productService: CateringProductServi
         }
     }
 
+    // Simple paginated favourites endpoint (1-based pagination)
+    @GetMapping("/favourites/all")
+    fun getAllFavouriteProducts(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "id") sort: String = "id",
+        @RequestParam(defaultValue = "asc") direction: String = "asc"
+    ): ResponseEntity<ApiResponse<List<CateringProduct>>> {
+        return try {
+            // Convert to 0-based pagination for Spring Data
+            val zeroBasedPage = if (page <= 0) 0 else page - 1
+
+            val sortDirection = if (direction.lowercase() == "desc") Sort.Direction.DESC else Sort.Direction.ASC
+            val pageable = PageRequest.of(zeroBasedPage, size, Sort.by(sortDirection, sort))
+            val favouriteProductsPage = productService.getAllFavouriteProducts(pageable)
+
+            // Check if page is beyond available pages
+            if (zeroBasedPage >= favouriteProductsPage.totalPages && favouriteProductsPage.totalPages > 0) {
+                return ResponseEntity(
+                    ApiResponse(
+                        status = false,
+                        message = "Page $page not found. Total pages available: ${favouriteProductsPage.totalPages} (1-${favouriteProductsPage.totalPages})",
+                        data = null
+                    ),
+                    HttpStatus.NOT_FOUND
+                )
+            }
+
+            // Check if no data at all
+            if (favouriteProductsPage.totalElements == 0L) {
+                return ResponseEntity(
+                    ApiResponse(
+                        status = false,
+                        message = "No favourite products found",
+                        data = null
+                    ),
+                    HttpStatus.NOT_FOUND
+                )
+            }
+
+            // Success response (show 1-based page numbers to user)
+            ResponseEntity.ok(
+                ApiResponse(
+                    status = true,
+                    message = "Favourite products retrieved successfully (Page $page of ${favouriteProductsPage.totalPages}, Total: ${favouriteProductsPage.totalElements})",
+                    data = favouriteProductsPage.content
+                )
+            )
+        } catch (e: Exception) {
+            ResponseEntity(
+                ApiResponse(
+                    status = false,
+                    message = "Error retrieving favourite products: ${e.message}",
+                    data = null
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
+    }
+
+    // New paginated favourites endpoint
+    @GetMapping("/favourites")
+    fun getAllFavouriteProductsPaginated(
+        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
+    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+        val favouriteProductsPage = productService.getAllFavouriteProducts(pageable)
+
+        if (favouriteProductsPage.isEmpty) {
+            return ResponseEntity(
+                ApiResponse(
+                    status = false,
+                    message = "No favourite products found",
+                    data = null
+                ),
+                HttpStatus.NOT_FOUND
+            )
+        }
+
+        val pagedResponse = PagedResponse(
+            content = favouriteProductsPage.content,
+            pageable = PageableInfo(
+                sort = SortInfo(
+                    sorted = favouriteProductsPage.pageable.sort.isSorted,
+                    unsorted = favouriteProductsPage.pageable.sort.isUnsorted,
+                    empty = favouriteProductsPage.pageable.sort.isEmpty
+                ),
+                pageNumber = favouriteProductsPage.pageable.pageNumber,
+                pageSize = favouriteProductsPage.pageable.pageSize,
+                offset = favouriteProductsPage.pageable.offset,
+                paged = favouriteProductsPage.pageable.isPaged,
+                unpaged = favouriteProductsPage.pageable.isUnpaged
+            ),
+            totalElements = favouriteProductsPage.totalElements,
+            totalPages = favouriteProductsPage.totalPages,
+            last = favouriteProductsPage.isLast,
+            first = favouriteProductsPage.isFirst,
+            numberOfElements = favouriteProductsPage.numberOfElements,
+            size = favouriteProductsPage.size,
+            number = favouriteProductsPage.number
+        )
+
+        return ResponseEntity.ok(
+            ApiResponse(
+                status = true,
+                message = "Favourite products retrieved successfully",
+                data = pagedResponse
+            )
+        )
+    }
+
+    // New endpoint for favourites by device MAC address with pagination
+    @GetMapping("/favourites/device/{deviceMacAddress}")
+    fun getFavouriteProductsByDevice(
+        @PathVariable deviceMacAddress: String,
+        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
+    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+        val favouriteProductsPage = productService.getFavouriteProductsByDevice(deviceMacAddress, pageable)
+
+        if (favouriteProductsPage.isEmpty) {
+            return ResponseEntity(
+                ApiResponse(
+                    status = false,
+                    message = "No favourite products found for this device",
+                    data = null
+                ),
+                HttpStatus.NOT_FOUND
+            )
+        }
+
+        val pagedResponse = PagedResponse(
+            content = favouriteProductsPage.content,
+            pageable = PageableInfo(
+                sort = SortInfo(
+                    sorted = favouriteProductsPage.pageable.sort.isSorted,
+                    unsorted = favouriteProductsPage.pageable.sort.isUnsorted,
+                    empty = favouriteProductsPage.pageable.sort.isEmpty
+                ),
+                pageNumber = favouriteProductsPage.pageable.pageNumber,
+                pageSize = favouriteProductsPage.pageable.pageSize,
+                offset = favouriteProductsPage.pageable.offset,
+                paged = favouriteProductsPage.pageable.isPaged,
+                unpaged = favouriteProductsPage.pageable.isUnpaged
+            ),
+            totalElements = favouriteProductsPage.totalElements,
+            totalPages = favouriteProductsPage.totalPages,
+            last = favouriteProductsPage.isLast,
+            first = favouriteProductsPage.isFirst,
+            numberOfElements = favouriteProductsPage.numberOfElements,
+            size = favouriteProductsPage.size,
+            number = favouriteProductsPage.number
+        )
+
+        return ResponseEntity.ok(
+            ApiResponse(
+                status = true,
+                message = "Favourite products retrieved successfully",
+                data = pagedResponse
+            )
+        )
+    }
+
+    // Campaign products with pagination
+    @GetMapping("/campaigns")
+    fun getCampaignProducts(
+        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
+    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+        val campaignProductsPage = productService.getCampaignProducts(pageable)
+
+        if (campaignProductsPage.isEmpty) {
+            return ResponseEntity(
+                ApiResponse(
+                    status = false,
+                    message = "No campaign products found",
+                    data = null
+                ),
+                HttpStatus.NOT_FOUND
+            )
+        }
+
+        val pagedResponse = PagedResponse(
+            content = campaignProductsPage.content,
+            pageable = PageableInfo(
+                sort = SortInfo(
+                    sorted = campaignProductsPage.pageable.sort.isSorted,
+                    unsorted = campaignProductsPage.pageable.sort.isUnsorted,
+                    empty = campaignProductsPage.pageable.sort.isEmpty
+                ),
+                pageNumber = campaignProductsPage.pageable.pageNumber,
+                pageSize = campaignProductsPage.pageable.pageSize,
+                offset = campaignProductsPage.pageable.offset,
+                paged = campaignProductsPage.pageable.isPaged,
+                unpaged = campaignProductsPage.pageable.isUnpaged
+            ),
+            totalElements = campaignProductsPage.totalElements,
+            totalPages = campaignProductsPage.totalPages,
+            last = campaignProductsPage.isLast,
+            first = campaignProductsPage.isFirst,
+            numberOfElements = campaignProductsPage.numberOfElements,
+            size = campaignProductsPage.size,
+            number = campaignProductsPage.number
+        )
+
+        return ResponseEntity.ok(
+            ApiResponse(
+                status = true,
+                message = "Campaign products retrieved successfully",
+                data = pagedResponse
+            )
+        )
+    }
+
     @PostMapping
     fun createProduct(@RequestBody product: CateringProduct): ResponseEntity<ApiResponse<CateringProduct>> {
         return try {
-            product.sku = "SKU"+ Random.nextInt(10000000)
+            product.sku = "SKU" + Random.nextInt(10000000)
             val newProduct = productService.createProduct(product)
 
             ResponseEntity.status(HttpStatus.CREATED).body(
