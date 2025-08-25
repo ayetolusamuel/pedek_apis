@@ -84,3 +84,18 @@ data class CampaignResponse(
     val products: List<CateringProduct>,
     val isActive: Boolean
 )
+
+data class ActiveCampaignsResponse(
+    val status: Boolean,
+    val message: String,
+    val isActive: Boolean,
+    val campaigns: List<CampaignWithProducts>
+)
+
+data class CampaignWithProducts(
+    val name: String,
+    val bannerImage: String,
+//    val products: List<ProductDTO>
+    val products: List<CateringProduct>
+)
+

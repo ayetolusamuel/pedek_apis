@@ -1,5 +1,6 @@
 package com.pedektech.pedek_catering.controllers
 
+import com.pedektech.pedek_catering.models.ActiveCampaignsResponse
 import com.pedektech.pedek_catering.models.CampaignRequest
 import com.pedektech.pedek_catering.models.CampaignResponse
 import com.pedektech.pedek_catering.models.UpdateStatusRequest
@@ -11,6 +12,13 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/campaign")
 class CampaignController(private val campaignService: CampaignService) {
+
+    @GetMapping("/active")
+    fun getAllActiveCampaigns(): ResponseEntity<ActiveCampaignsResponse> {
+        val response = campaignService.getAllActiveCampaigns()
+        return ResponseEntity.ok(response)
+    }
+
 
     @GetMapping("/{campaignName}/products")
     fun getCampaignProducts(@PathVariable campaignName: String): CampaignResponse {

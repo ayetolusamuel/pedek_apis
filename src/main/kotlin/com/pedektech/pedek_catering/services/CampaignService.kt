@@ -3,6 +3,7 @@ package com.pedektech.pedek_catering.services
 import com.pedektech.pedek_catering.models.*
 import com.pedektech.pedek_catering.repositories.CampaignRepository
 import com.pedektech.pedek_catering.repositories.CateringProductRepository
+import com.pedektech.pedek_catering.util.toDTO
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -11,6 +12,31 @@ class CampaignService(
     private val campaignRepository: CampaignRepository,
     private val productRepository: CateringProductRepository
 ) {
+    fun getAllActiveCampaigns(): ActiveCampaignsResponse {
+        val activeCampaigns = campaignRepository.findByActiveTrue()
+
+        val campaigns = activeCampaigns.map { campaign ->
+            val products = productRepository.findBySkuIn(campaign.productSkus)
+               // .map { it.toDTO() }
+               // .map { it.toDTO() }
+            CampaignWithProducts(
+                name = campaign.name,
+                bannerImage = campaign.bannerImage,
+                products = products
+            )
+        }
+
+        return ActiveCampaignsResponse(
+            status = true,
+            message = "Active campaign fetched successfully.",
+            isActive = activeCampaigns.isNotEmpty(),
+            campaigns = campaigns
+        )
+    }
+
+
+
+
     fun getCampaignProducts(campaignName: String): CampaignResponse {
         return try {
             // Fetch campaign by name.
