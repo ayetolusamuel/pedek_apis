@@ -44,7 +44,7 @@ data class ProductDTO(
     val sku: String?,
     val name: String,
     val category: String,
-    val pricePerPiece: Double,
+    //val pricePerPiece: Double,
     val availableStock: Int,
     val discount: Double?,
     val thumbnail: String?

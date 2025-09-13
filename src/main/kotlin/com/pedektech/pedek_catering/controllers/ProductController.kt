@@ -1,7 +1,10 @@
 package com.pedektech.pedek_catering.controllers
 
 import com.pedektech.pedek_catering.exceptions.DuplicateProductException
-import com.pedektech.pedek_catering.models.CateringProduct
+import com.pedektech.pedek_catering.models.Product
+import com.pedektech.pedek_catering.models.ProductRequest
+import com.pedektech.pedek_catering.models.ProductResponse
+import com.pedektech.pedek_catering.models.toResponse
 import com.pedektech.pedek_catering.services.CateringProductService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -53,67 +56,44 @@ class CateringProductController(private val productService: CateringProductServi
     @GetMapping("/all")
     fun getAllProducts(
         @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "10") size: Int,
-        @RequestParam(defaultValue = "id") sort: String = "id",
-        @RequestParam(defaultValue = "asc") direction: String = "asc"
-    ): ResponseEntity<ApiResponse<List<CateringProduct>>> {
+        @RequestParam(defaultValue = "10") size: Int
+    ): ResponseEntity<ApiResponse<List<ProductResponse>>> {
         return try {
-            // Convert to 0-based pagination for Spring Data (page 1 becomes 0, page 2 becomes 1, etc.)
-            val zeroBasedPage = if (page <= 0) 0 else page - 1
+            val products = if (size == 0) {
+                productService.getAllProducts()
+            } else {
+                val pageable = PageRequest.of(page - 1, size)
+                productService.getAllProducts(pageable).content
+            }
 
-            val sortDirection = if (direction.lowercase() == "desc") Sort.Direction.DESC else Sort.Direction.ASC
-            val pageable = PageRequest.of(zeroBasedPage, size, Sort.by(sortDirection, sort))
-            val productsPage = productService.getAllProducts(pageable)
-
-            // Check if page is beyond available pages
-            if (zeroBasedPage >= productsPage.totalPages && productsPage.totalPages > 0) {
+            if (products.isEmpty()) {
                 return ResponseEntity(
-                    ApiResponse(
-                        status = false,
-                        message = "Page $page not found. Total pages available: ${productsPage.totalPages} (1-${productsPage.totalPages})",
-                        data = null
-                    ),
+                    ApiResponse(false, "No products found in the database", null),
                     HttpStatus.NOT_FOUND
                 )
             }
 
-            // Check if no data at all
-            if (productsPage.totalElements == 0L) {
-                return ResponseEntity(
-                    ApiResponse(
-                        status = false,
-                        message = "No products found in the database",
-                        data = null
-                    ),
-                    HttpStatus.NOT_FOUND
-                )
-            }
-
-            // Success response (show 1-based page numbers to user)
             ResponseEntity.ok(
                 ApiResponse(
                     status = true,
-                    message = "Products retrieved successfully (Page $page of ${productsPage.totalPages}, Total: ${productsPage.totalElements})",
-                    data = productsPage.content
+                    message = "Products retrieved successfully (Total: ${products.size})",
+                    data = products.map { it.toResponse() }
                 )
             )
         } catch (e: Exception) {
             ResponseEntity(
-                ApiResponse(
-                    status = false,
-                    message = "Error retrieving products: ${e.message}",
-                    data = null
-                ),
+                ApiResponse(false, "Error retrieving products: ${e.message}", null),
                 HttpStatus.INTERNAL_SERVER_ERROR
             )
         }
     }
 
+
     // New paginated endpoint
     @GetMapping
     fun getAllProductsPaginated(
         @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
         val productsPage = productService.getAllProducts(pageable)
 
         if (productsPage.isEmpty) {
@@ -160,7 +140,7 @@ class CateringProductController(private val productService: CateringProductServi
     }
 
     @GetMapping("/{id}")
-    fun getProductById(@PathVariable id: Long): ResponseEntity<ApiResponse<CateringProduct>> {
+    fun getProductById(@PathVariable id: Long): ResponseEntity<ApiResponse<Product>> {
         val product = productService.getProductById(id)
         return if (product.isPresent) {
             ResponseEntity.ok(
@@ -183,7 +163,7 @@ class CateringProductController(private val productService: CateringProductServi
     }
 
     @GetMapping("/sku/{sku}")
-    fun getProductBySku(@PathVariable sku: String): ResponseEntity<ApiResponse<CateringProduct>> {
+    fun getProductBySku(@PathVariable sku: String): ResponseEntity<ApiResponse<Product>> {
         val product = productService.getProductBySku(sku)
         return if (product != null) {
             ResponseEntity.ok(
@@ -212,7 +192,7 @@ class CateringProductController(private val productService: CateringProductServi
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(defaultValue = "id") sort: String = "id",
         @RequestParam(defaultValue = "asc") direction: String = "asc"
-    ): ResponseEntity<ApiResponse<List<CateringProduct>>> {
+    ): ResponseEntity<ApiResponse<List<Product>>> {
         return try {
             // Convert to 0-based pagination for Spring Data
             val zeroBasedPage = if (page <= 0) 0 else page - 1
@@ -269,7 +249,7 @@ class CateringProductController(private val productService: CateringProductServi
     @GetMapping("/favourites")
     fun getAllFavouriteProductsPaginated(
         @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
         val favouriteProductsPage = productService.getAllFavouriteProducts(pageable)
 
         if (favouriteProductsPage.isEmpty) {
@@ -320,7 +300,7 @@ class CateringProductController(private val productService: CateringProductServi
     fun getFavouriteProductsByDevice(
         @PathVariable deviceMacAddress: String,
         @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
         val favouriteProductsPage = productService.getFavouriteProductsByDevice(deviceMacAddress, pageable)
 
         if (favouriteProductsPage.isEmpty) {
@@ -370,7 +350,7 @@ class CateringProductController(private val productService: CateringProductServi
     @GetMapping("/campaigns")
     fun getCampaignProducts(
         @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<ApiResponse<PagedResponse<CateringProduct>>> {
+    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
         val campaignProductsPage = productService.getCampaignProducts(pageable)
 
         if (campaignProductsPage.isEmpty) {
@@ -417,7 +397,7 @@ class CateringProductController(private val productService: CateringProductServi
     }
 
     @PostMapping
-    fun createProduct(@RequestBody product: CateringProduct): ResponseEntity<ApiResponse<CateringProduct>> {
+    fun createProduct(@RequestBody product: ProductRequest): ResponseEntity<ApiResponse<Product>> {
         return try {
             product.sku = "SKU" + Random.nextInt(10000000)
             val newProduct = productService.createProduct(product)
@@ -443,8 +423,8 @@ class CateringProductController(private val productService: CateringProductServi
     @PutMapping("/{id}")
     fun updateProduct(
         @PathVariable id: Long,
-        @RequestBody updatedProduct: CateringProduct
-    ): ResponseEntity<ApiResponse<CateringProduct>> {
+        @RequestBody updatedProduct: Product
+    ): ResponseEntity<ApiResponse<Product>> {
         val product = productService.updateProduct(id, updatedProduct)
         return if (product != null) {
             ResponseEntity.ok(

@@ -185,7 +185,7 @@ class UserService(
             phoneNumber = userDetails.phoneNumber,
             userPassword = hashedPassword, // Should be encrypted before saving
             accessDevice = normalizedMacAddress,
-            role = userDetails.role ?: Role.CUSTOMER,
+            role = Role.CUSTOMER,
             createdAt = Date(),
             modifiedAt = Date(),
             isActive = true,
