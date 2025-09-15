@@ -1,10 +1,10 @@
-package com.pedektech.pedek_catering.models
+package com.pedektech.pedek_apis.pedek_catering.models
 
 import jakarta.persistence.*
 import java.util.*
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "pedek_catering_database")
 @SequenceGenerator(
     name = "user_seq",
     sequenceName = "user_sequence",

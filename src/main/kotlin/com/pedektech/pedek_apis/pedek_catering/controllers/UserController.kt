@@ -1,7 +1,8 @@
-package com.pedektech.pedek_catering.controllers
+package com.pedektech.pedek_apis.pedek_catering.controllers
 
-import com.pedektech.pedek_catering.models.*
-import com.pedektech.pedek_catering.services.UserService
+import com.pedektech.pedek_apis.models.*
+import com.pedektech.pedek_apis.pedek_catering.models.*
+import com.pedektech.pedek_apis.pedek_catering.services.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

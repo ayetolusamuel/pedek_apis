@@ -1,4 +1,4 @@
-package com.pedektech.pedek_catering.exceptions
+package com.pedektech.pedek_apis.exceptions
 
 
 import io.jsonwebtoken.ExpiredJwtException

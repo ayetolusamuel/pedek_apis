@@ -1,7 +1,7 @@
 //package com.pedektech.pedek_catering.services
 //
-//import com.pedektech.pedek_catering.models.Favourites
-//import com.pedektech.pedek_catering.repositories.FavouriteRepository
+//import com.pedektech.pedek_apis.models.Favourites
+//import com.pedektech.pedek_apis.repositories.FavouriteRepository
 //import org.springframework.stereotype.Service
 //
 //@Service

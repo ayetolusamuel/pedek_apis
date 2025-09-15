@@ -1,10 +1,10 @@
-package com.pedektech.pedek_catering.controllers
+package com.pedektech.pedek_apis.pedek_catering.controllers
 
-import com.pedektech.pedek_catering.models.ActiveCampaignsResponse
-import com.pedektech.pedek_catering.models.CampaignRequest
-import com.pedektech.pedek_catering.models.CampaignResponse
-import com.pedektech.pedek_catering.models.UpdateStatusRequest
-import com.pedektech.pedek_catering.services.CampaignService
+import com.pedektech.pedek_apis.pedek_catering.models.ActiveCampaignsResponse
+import com.pedektech.pedek_apis.pedek_catering.models.CampaignRequest
+import com.pedektech.pedek_apis.pedek_catering.models.CampaignResponse
+import com.pedektech.pedek_apis.pedek_catering.models.UpdateStatusRequest
+import com.pedektech.pedek_apis.pedek_catering.services.CampaignService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

@@ -1,11 +1,12 @@
-package com.pedektech.pedek_catering.services
+package com.pedektech.pedek_apis.pedek_catering.services
 
 
 
 
 
-import com.pedektech.pedek_catering.models.*
-import com.pedektech.pedek_catering.repositories.UserRepository
+import com.pedektech.pedek_apis.models.*
+import com.pedektech.pedek_apis.pedek_catering.models.*
+import com.pedektech.pedek_apis.pedek_catering.repositories.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*

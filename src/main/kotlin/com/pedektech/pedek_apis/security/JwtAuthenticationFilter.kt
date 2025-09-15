@@ -1,7 +1,7 @@
 //package com.pedektech.pedek_catering.security
 //
 //import com.fasterxml.jackson.databind.ObjectMapper
-//import com.pedektech.pedek_catering.util.JwtUtil
+//import com.pedektech.pedek_apis.util.JwtUtil
 //import io.jsonwebtoken.ExpiredJwtException
 //import jakarta.servlet.FilterChain
 //import jakarta.servlet.http.HttpServletRequest

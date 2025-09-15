@@ -1,11 +1,12 @@
-package com.pedektech.pedek_catering.models
+package com.pedektech.pedek_apis.pedek_catering.models
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import java.time.LocalDate
 
-@Entity(name = "product")
+@Entity
+@Table(name = "products", schema = "pedek_catering_database")
 data class Product(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

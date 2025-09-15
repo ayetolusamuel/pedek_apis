@@ -1,7 +1,7 @@
-package com.pedektech.pedek_catering.repositories
+package com.pedektech.pedek_apis.pedek_catering.repositories
 
-import com.pedektech.pedek_catering.models.Product
-import com.pedektech.pedek_catering.models.Favourites
+import com.pedektech.pedek_apis.pedek_catering.models.Product
+import com.pedektech.pedek_apis.pedek_catering.models.Favourites
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository

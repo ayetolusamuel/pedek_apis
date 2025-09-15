@@ -1,11 +1,11 @@
-package com.pedektech.pedek_catering.controllers
+package com.pedektech.pedek_apis.pedek_catering.controllers
 
-import com.pedektech.pedek_catering.exceptions.DuplicateProductException
-import com.pedektech.pedek_catering.models.Product
-import com.pedektech.pedek_catering.models.ProductRequest
-import com.pedektech.pedek_catering.models.ProductResponse
-import com.pedektech.pedek_catering.models.toResponse
-import com.pedektech.pedek_catering.services.CateringProductService
+import com.pedektech.pedek_apis.exceptions.DuplicateProductException
+import com.pedektech.pedek_apis.pedek_catering.models.Product
+import com.pedektech.pedek_apis.pedek_catering.models.ProductRequest
+import com.pedektech.pedek_apis.pedek_catering.models.ProductResponse
+import com.pedektech.pedek_apis.pedek_catering.models.toResponse
+import com.pedektech.pedek_apis.pedek_catering.services.CateringProductService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort

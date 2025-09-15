@@ -1,7 +1,7 @@
-package com.pedektech.pedek_catering.util
+package com.pedektech.pedek_apis.util
 
-import com.pedektech.pedek_catering.models.Product
-import com.pedektech.pedek_catering.models.ProductDTO
+import com.pedektech.pedek_apis.pedek_catering.models.Product
+import com.pedektech.pedek_apis.pedek_catering.models.ProductDTO
 
 fun Product.toDTO(): ProductDTO {
     return ProductDTO(
