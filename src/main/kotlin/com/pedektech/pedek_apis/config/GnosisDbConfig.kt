@@ -35,7 +35,7 @@ class GnosisDbConfig {
     ): LocalContainerEntityManagerFactoryBean =
         builder
             .dataSource(dataSource)
-            .packages("com.pedektech.pedek_apis.gnosis.models") // <-- this must be EXACT
+            .packages("com.pedektech.pedek_apis.gnosis.models.Emotion")
             .persistenceUnit("gnosisPU")
             .build()
 
