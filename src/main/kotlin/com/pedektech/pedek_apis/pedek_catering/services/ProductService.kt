@@ -1,7 +1,6 @@
 package com.pedektech.pedek_apis.pedek_catering.services
 
 import com.pedektech.pedek_apis.exceptions.DuplicateProductException
-import com.pedektech.pedek_apis.models.*
 import com.pedektech.pedek_apis.pedek_catering.models.*
 import com.pedektech.pedek_apis.pedek_catering.repositories.CateringProductRepository
 import com.pedektech.pedek_apis.pedek_catering.repositories.FavouriteRepository

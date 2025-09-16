@@ -16,11 +16,3 @@ interface CateringProductRepository: JpaRepository<Product, Long> {
     override fun findAll(pageable: Pageable): Page<Product>
     fun findAllByDiscountIsNotNull(pageable: Pageable): Page<Product>
 }
-
-interface FavouriteRepository: JpaRepository<Favourites, Long> {
-    fun findByDeviceMacAddressAndSku(deviceMacAddress: String, sku: String): Favourites?
-
-    // Paginated methods
-    override fun findAll(pageable: Pageable): Page<Favourites>
-    fun findByDeviceMacAddress(deviceMacAddress: String, pageable: Pageable): Page<Favourites>
-}
