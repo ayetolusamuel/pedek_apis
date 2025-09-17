@@ -16,36 +16,77 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
 
 
+
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
     basePackages = ["com.pedektech.pedek_apis.pedek_catering.repositories"],
-    entityManagerFactoryRef = "entityManagerFactory",
-    transactionManagerRef = "transactionManager"
+    entityManagerFactoryRef = "cateringEntityManagerFactory",
+    transactionManagerRef = "cateringTransactionManager"
 )
 class CateringDbConfig {
 
-    @Primary
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.catering")
-    fun cateringDataSource(): DataSource =
-        DataSourceBuilder.create().build()
-
-    @Primary
-    @Bean(name = ["entityManagerFactory"])
-    fun entityManagerFactory(
-        builder: EntityManagerFactoryBuilder
-    ): LocalContainerEntityManagerFactoryBean =
-        builder
-            .dataSource(cateringDataSource())
+    @Bean(name = ["cateringEntityManagerFactory"])
+    fun cateringEntityManagerFactory(
+        builder: EntityManagerFactoryBuilder,
+        @Qualifier("cateringDataSource") dataSource: DataSource
+    ): LocalContainerEntityManagerFactoryBean {
+        return builder
+            .dataSource(dataSource)
             .packages("com.pedektech.pedek_apis.pedek_catering.models")
-            .persistenceUnit("cateringPU")
+            .persistenceUnit("catering")
+            .properties(jpaProperties())
             .build()
+    }
 
-    @Primary
-    @Bean(name = ["transactionManager"])
-    fun transactionManager(
-        @Qualifier("entityManagerFactory") emf: EntityManagerFactory
-    ): PlatformTransactionManager =
-        JpaTransactionManager(emf)
+    @Bean(name = ["cateringTransactionManager"])
+    fun cateringTransactionManager(
+        @Qualifier("cateringEntityManagerFactory") entityManagerFactory: LocalContainerEntityManagerFactoryBean
+    ): PlatformTransactionManager {
+        return JpaTransactionManager(entityManagerFactory.`object`!!)
+    }
+
+    private fun jpaProperties(): Map<String, Any> {
+        return mapOf(
+            "hibernate.hbm2ddl.auto" to "update",
+            "hibernate.dialect" to "org.hibernate.dialect.MySQLDialect",
+            "hibernate.show_sql" to "true",
+            "hibernate.default_schema" to "catering_schema"
+        )
+    }
 }
+//
+//
+//@Configuration
+//@EnableTransactionManagement
+//@EnableJpaRepositories(
+//    basePackages = ["com.pedektech.pedek_apis.pedek_catering.repositories"],
+//    entityManagerFactoryRef = "entityManagerFactory",
+//    transactionManagerRef = "transactionManager"
+//)
+//class CateringDbConfig {
+//
+//    @Primary
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource.catering")
+//    fun cateringDataSource(): DataSource =
+//        DataSourceBuilder.create().build()
+//
+//    @Primary
+//    @Bean(name = ["entityManagerFactory"])
+//    fun entityManagerFactory(
+//        builder: EntityManagerFactoryBuilder
+//    ): LocalContainerEntityManagerFactoryBean =
+//        builder
+//            .dataSource(cateringDataSource())
+//            .packages("com.pedektech.pedek_apis.pedek_catering.models")
+//            .persistenceUnit("cateringPU")
+//            .build()
+//
+//    @Primary
+//    @Bean(name = ["transactionManager"])
+//    fun transactionManager(
+//        @Qualifier("entityManagerFactory") emf: EntityManagerFactory
+//    ): PlatformTransactionManager =
+//        JpaTransactionManager(emf)
+//}
