@@ -30,9 +30,21 @@ data class Product(
     @Column(nullable = true)
     val brand: String? = null,
 
-    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    val priceTiers: MutableList<PriceTier> = mutableListOf(),
+    val images: MutableSet<ProductImage> = mutableSetOf(),
+
+    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    val priceTiers: MutableSet<PriceTier> = mutableSetOf(),
+//
+//    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+//    @JsonManagedReference
+//    val images: MutableList<ProductImage> = mutableListOf(),
+//
+//    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+//    @JsonManagedReference
+//    val priceTiers: MutableList<PriceTier> = mutableListOf(),
 
     @Column(nullable = true)
     val ingredient: String? = null,
@@ -63,11 +75,12 @@ data class Product(
 
     @Column(nullable = true)
     val largeImage: String? = null,
-
-    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @JsonManagedReference
-    val images: MutableList<ProductImage> = mutableListOf()
 ){
+        override fun equals(other: Any?): Boolean =
+            this === other || (other is Product && id != null && id == other.id)
+
+        override fun hashCode(): Int = id?.hashCode() ?: 0
+
     override fun toString(): String {
         return "Product(id=$id, sku=$sku, name=$name, category=$category, priceTiers=${priceTiers.size}, images=${images.size})"
     }

@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import java.util.*
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class CateringProductService(
@@ -17,11 +19,35 @@ class CateringProductService(
     private val favouriteRepository: FavouriteRepository
 ) {
 
+    @Transactional(readOnly = true)
+    fun getAllProducts(pageable: Pageable): Page<ProductResponse> {
+        val products = productRepository.findAllWithRelations(pageable)
+        val productResponses = products.map { it.toResponse() }
+        return PageImpl(productResponses, pageable, productResponses.size.toLong())
+    }
+
+//    @Transactional(readOnly = true)
+//    fun getAllProducts(pageable: Pageable): Page<ProductResponse> {
+//        val products = productRepository.findAll(pageable)
+//        return products.map { it.toResponse() } // map while session is still open
+//    }
+
+    @Transactional(readOnly = true)
+    fun getAllProductsWithoutPagination(): List<ProductResponse> {
+        return productRepository.findAll().map { it.toResponse() }
+    }
+
+//
+//    @Transactional(readOnly = true)
+//    fun getAllProducts(pageable: Pageable): Page<Product> {
+//        return productRepository.findAll(pageable)
+//    }
+
     // Original methods (kept for backward compatibility)
     fun getAllProducts(): List<Product> = productRepository.findAll()
 
     // New paginated method
-    fun getAllProducts(pageable: Pageable): Page<Product> = productRepository.findAll(pageable)
+   // fun getAllProducts(pageable: Pageable): Page<Product> = productRepository.findAll(pageable)
 
     fun getProductById(id: Long): Optional<Product> = productRepository.findById(id)
 

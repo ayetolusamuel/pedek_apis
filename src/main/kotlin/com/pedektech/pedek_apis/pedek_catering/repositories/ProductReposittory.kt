@@ -5,6 +5,7 @@ import com.pedektech.pedek_apis.pedek_catering.models.Favourites
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 
 interface CateringProductRepository: JpaRepository<Product, Long> {
     fun findBySku(sku: String): Product?
@@ -12,7 +13,17 @@ interface CateringProductRepository: JpaRepository<Product, Long> {
     fun findBySkuIn(skus: List<String>): List<Product>
     fun findAllByDiscountIsNotNull(): List<Product> // Fetch products with discounts (if it's part of the campaign)
 
+
     // Paginated methods
     override fun findAll(pageable: Pageable): Page<Product>
     fun findAllByDiscountIsNotNull(pageable: Pageable): Page<Product>
+
+    @Query(
+        "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.images " +
+                "LEFT JOIN FETCH p.priceTiers"
+    )
+    fun findAllWithRelations(pageable: Pageable): List<Product>
+
+
 }
