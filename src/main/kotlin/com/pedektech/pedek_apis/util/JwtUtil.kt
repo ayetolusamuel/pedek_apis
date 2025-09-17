@@ -1,4 +1,4 @@
-package com.pedektech.pedek_catering.util
+package com.pedektech.pedek_apis.util
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

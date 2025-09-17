@@ -1,8 +1,9 @@
-package com.pedektech.pedek_catering.models
+package com.pedektech.pedek_apis.pedek_catering.models
 import jakarta.persistence.*
 import java.time.LocalDate
 
-@Entity(name = "campaigns")
+@Entity
+@Table(name = "campaigns", schema = "pedek_catering_database")
 data class Campaign(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +45,7 @@ data class ProductDTO(
     val sku: String?,
     val name: String,
     val category: String,
-    val pricePerPiece: Double,
+    //val pricePerPiece: Double,
     val availableStock: Int,
     val discount: Double?,
     val thumbnail: String?

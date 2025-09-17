@@ -1,4 +1,4 @@
-package com.pedektech.ncym.util
+package com.pedektech.pedek_apis.util
 
 import java.security.SecureRandom
 

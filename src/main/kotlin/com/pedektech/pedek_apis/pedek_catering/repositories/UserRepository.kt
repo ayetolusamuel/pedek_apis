@@ -1,7 +1,6 @@
-package com.pedektech.pedek_catering.repositories
+package com.pedektech.pedek_apis.pedek_catering.repositories
 
-import com.pedektech.pedek_catering.models.Campaign
-import com.pedektech.pedek_catering.models.User
+import com.pedektech.pedek_apis.pedek_catering.models.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

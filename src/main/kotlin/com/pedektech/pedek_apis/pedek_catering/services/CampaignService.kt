@@ -1,9 +1,9 @@
-package com.pedektech.pedek_catering.services
+package com.pedektech.pedek_apis.pedek_catering.services
 
-import com.pedektech.pedek_catering.models.*
-import com.pedektech.pedek_catering.repositories.CampaignRepository
-import com.pedektech.pedek_catering.repositories.CateringProductRepository
-import com.pedektech.pedek_catering.util.toDTO
+import com.pedektech.pedek_apis.models.*
+import com.pedektech.pedek_apis.pedek_catering.models.*
+import com.pedektech.pedek_apis.pedek_catering.repositories.CampaignRepository
+import com.pedektech.pedek_apis.pedek_catering.repositories.CateringProductRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
