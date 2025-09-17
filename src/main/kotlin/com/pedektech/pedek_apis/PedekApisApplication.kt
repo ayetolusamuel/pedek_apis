@@ -6,8 +6,8 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @SpringBootApplication
-@ComponentScan(basePackages = arrayOf("com.pedektech.pedek_apis"))
-@EnableJpaRepositories(basePackages = arrayOf("com.pedektech.pedek_apis.pedek_catering.repositories"))
+@ComponentScan(basePackages = ["com.pedektech.pedek_apis"])
+@EnableJpaRepositories(basePackages = ["com.pedektech.pedek_apis.pedek_catering.repositories", "com.pedektech.pedek_apis.gnosis.repositories"])
 class PedekApisApplication
 
 fun main(args: Array<String>) {
