@@ -60,7 +60,7 @@ class CateringProductController(private val productService: CateringProductServi
     ): ResponseEntity<ApiResponse<List<ProductResponse>>> {
         return try {
             val products = if (size == 0) {
-                productService.getAllProducts()
+                productService.getAllProductsWithoutPagination()
             } else {
                 val pageable = PageRequest.of(page - 1, size)
                 productService.getAllProducts(pageable).content
@@ -77,7 +77,7 @@ class CateringProductController(private val productService: CateringProductServi
                 ApiResponse(
                     status = true,
                     message = "Products retrieved successfully (Total: ${products.size})",
-                    data = products.map { it.toResponse() }
+                    data = products
                 )
             )
         } catch (e: Exception) {
@@ -89,55 +89,56 @@ class CateringProductController(private val productService: CateringProductServi
     }
 
 
-    // New paginated endpoint
-    @GetMapping
-    fun getAllProductsPaginated(
-        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
-        val productsPage = productService.getAllProducts(pageable)
-
-        if (productsPage.isEmpty) {
-            return ResponseEntity(
-                ApiResponse(
-                    status = false,
-                    message = "No products found",
-                    data = null
-                ),
-                HttpStatus.NOT_FOUND
-            )
-        }
-
-        val pagedResponse = PagedResponse(
-            content = productsPage.content,
-            pageable = PageableInfo(
-                sort = SortInfo(
-                    sorted = productsPage.pageable.sort.isSorted,
-                    unsorted = productsPage.pageable.sort.isUnsorted,
-                    empty = productsPage.pageable.sort.isEmpty
-                ),
-                pageNumber = productsPage.pageable.pageNumber,
-                pageSize = productsPage.pageable.pageSize,
-                offset = productsPage.pageable.offset,
-                paged = productsPage.pageable.isPaged,
-                unpaged = productsPage.pageable.isUnpaged
-            ),
-            totalElements = productsPage.totalElements,
-            totalPages = productsPage.totalPages,
-            last = productsPage.isLast,
-            first = productsPage.isFirst,
-            numberOfElements = productsPage.numberOfElements,
-            size = productsPage.size,
-            number = productsPage.number
-        )
-
-        return ResponseEntity.ok(
-            ApiResponse(
-                status = true,
-                message = "Products retrieved successfully",
-                data = pagedResponse
-            )
-        )
-    }
+//
+//    // New paginated endpoint
+//    @GetMapping
+//    fun getAllProductsPaginated(
+//        @PageableDefault(size = 10, sort = ["id"], direction = Sort.Direction.ASC) pageable: Pageable
+//    ): ResponseEntity<ApiResponse<PagedResponse<Product>>> {
+//        val productsPage = productService.getAllProducts(pageable)
+//
+//        if (productsPage.isEmpty) {
+//            return ResponseEntity(
+//                ApiResponse(
+//                    status = false,
+//                    message = "No products found",
+//                    data = null
+//                ),
+//                HttpStatus.NOT_FOUND
+//            )
+//        }
+//
+//        val pagedResponse = PagedResponse(
+//            content = productsPage.content,
+//            pageable = PageableInfo(
+//                sort = SortInfo(
+//                    sorted = productsPage.pageable.sort.isSorted,
+//                    unsorted = productsPage.pageable.sort.isUnsorted,
+//                    empty = productsPage.pageable.sort.isEmpty
+//                ),
+//                pageNumber = productsPage.pageable.pageNumber,
+//                pageSize = productsPage.pageable.pageSize,
+//                offset = productsPage.pageable.offset,
+//                paged = productsPage.pageable.isPaged,
+//                unpaged = productsPage.pageable.isUnpaged
+//            ),
+//            totalElements = productsPage.totalElements,
+//            totalPages = productsPage.totalPages,
+//            last = productsPage.isLast,
+//            first = productsPage.isFirst,
+//            numberOfElements = productsPage.numberOfElements,
+//            size = productsPage.size,
+//            number = productsPage.number
+//        )
+//
+//        return ResponseEntity.ok(
+//            ApiResponse(
+//                status = true,
+//                message = "Products retrieved successfully",
+//                data = pagedResponse
+//            )
+//        )
+//    }
 
     @GetMapping("/{id}")
     fun getProductById(@PathVariable id: Long): ResponseEntity<ApiResponse<Product>> {
