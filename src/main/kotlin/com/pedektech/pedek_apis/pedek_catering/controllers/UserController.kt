@@ -1,6 +1,5 @@
 package com.pedektech.pedek_apis.pedek_catering.controllers
 
-import com.pedektech.pedek_apis.models.*
 import com.pedektech.pedek_apis.pedek_catering.models.*
 import com.pedektech.pedek_apis.pedek_catering.services.UserService
 import org.springframework.http.HttpStatus

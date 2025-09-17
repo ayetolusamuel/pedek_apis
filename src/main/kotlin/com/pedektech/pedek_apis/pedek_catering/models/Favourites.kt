@@ -1,7 +1,6 @@
 package com.pedektech.pedek_apis.pedek_catering.models
 
 import jakarta.persistence.*
-import java.time.LocalDate
 
 @Entity
 @Table(name = "favourites", schema = "pedek_catering_database")
